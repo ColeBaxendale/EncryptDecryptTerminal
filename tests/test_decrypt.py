@@ -1,34 +1,42 @@
+# File: tests/test_decrypt.py
+
+import os
+import pytest
 from src.encrypt import encrypt_file
 from src.decrypt import decrypt_file
 from cryptography.fernet import Fernet
-import os
+from cryptography.fernet import InvalidToken
 
-def test_encrypt_and_decrypt_file():
-    # Setup - create a test file and a key
-    test_filename = 'testfile.txt'
-    test_content = b'This is a test.'
+def test_decrypt_file_with_correct_key(tmp_path):
+    test_file = tmp_path / 'testfile.txt'
+    content = b'This is a test.'
     key = Fernet.generate_key()
-
-    # Write original content to the file
-    with open(test_filename, 'wb') as f:
-        f.write(test_content)
-
-    # Encrypt the file
-    encrypt_file(test_filename, key)
     
-    # Ensure the encrypted file exists
-    encrypted_file_path = test_filename + '.enc'
-    assert os.path.exists(encrypted_file_path)
-
-    # Decrypt the file
-    decrypt_file(encrypted_file_path, key)
-
-    # Read the decrypted content and verify it matches the original
-    with open(test_filename, 'rb') as f:
-        decrypted_content = f.read()
+    test_file.write_bytes(content)
+    encrypt_file(str(test_file), key)
     
-    assert decrypted_content == test_content
+    encrypted_file = str(test_file) + '.enc'
+    decrypt_file(encrypted_file, key)
+    
+    decrypted_content = test_file.read_bytes()
+    assert decrypted_content == content
 
-    # Cleanup - remove test files
-    os.remove(test_filename)
-    os.remove(encrypted_file_path)
+def test_decrypt_file_with_incorrect_key(tmp_path):
+    test_file = tmp_path / 'testfile.txt'
+    content = b'This is a test.'
+    key = Fernet.generate_key()
+    wrong_key = Fernet.generate_key()
+    
+    test_file.write_bytes(content)
+    encrypt_file(str(test_file), key)
+    
+    encrypted_file = str(test_file) + '.enc'
+    with pytest.raises(InvalidToken):
+        decrypt_file(encrypted_file, wrong_key)
+
+def test_decrypt_nonexistent_file(tmp_path):
+    nonexistent_file = tmp_path / 'nonexistent.enc'
+    key = Fernet.generate_key()
+    
+    with pytest.raises(FileNotFoundError):
+        decrypt_file(str(nonexistent_file), key)
