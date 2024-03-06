@@ -1,8 +1,9 @@
 import click
-from .encrypt import encrypt_file
-from .decrypt import decrypt_file
+from src.encrypt import encrypt_file
+from src.decrypt import decrypt_file
 from cryptography.fernet import Fernet
 import os
+
 
 # You might load the key from an environment variable or a file
 key = os.getenv("ENCRYPTION_KEY", Fernet.generate_key())
