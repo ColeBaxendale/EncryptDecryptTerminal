@@ -1,16 +1,22 @@
+import os
 import click
 import webbrowser
 from http.server import BaseHTTPRequestHandler, HTTPServer
-import threading
 import requests
+import subprocess
+import base64
+from cryptography.fernet import Fernet
 
+# Please make sure to securely configure your client ID and secret
 CLIENT_ID = '905746f3395ec758bef4'
-CLIENT_SECRET = '1991f8c7a370187bf2fb6db5696e155324d427c3'  # Make sure to securely configure this
+CLIENT_SECRET = 'a619ae1daeb0e4ee51eb1d2ab3edd1cbdfdc1b9c'  # Securely manage this
 REDIRECT_URI = 'http://localhost:3000/callback'
 SCOPES = 'repo,user'
 
-# This global variable will store the access token once obtained
 access_token = None
+
+
+
 
 class OAuthCallbackHandler(BaseHTTPRequestHandler):
     def do_GET(self):
@@ -19,14 +25,14 @@ class OAuthCallbackHandler(BaseHTTPRequestHandler):
             self.send_response(200)
             self.send_header('Content-type', 'text/html')
             self.end_headers()
-            self.wfile.write(b"Authentication successful. You can close this window.")
-            
-            # Extract the code from the URL
             code = self.path.split('?code=')[1]
-            
-            # Exchange the code for a token
             access_token = exchange_code_for_token(code)
-            print(f"Access Token Obtained: {access_token}")  # For debugging purposes
+            message = "Authentication successful. You can close this window."
+            self.wfile.write(message.encode())
+
+
+
+
 
 def exchange_code_for_token(code):
     url = 'https://github.com/login/oauth/access_token'
@@ -38,43 +44,76 @@ def exchange_code_for_token(code):
         'redirect_uri': REDIRECT_URI
     }
     response = requests.post(url, data=payload, headers=headers)
-    token_response = response.json()
-    return token_response.get('access_token')
+    token_json = response.json()
+    return token_json.get('access_token')
 
-@click.command()
+
+
+
 def authenticate():
     auth_url = f"https://github.com/login/oauth/authorize?client_id={CLIENT_ID}&redirect_uri={REDIRECT_URI}&scope={SCOPES}"
     webbrowser.open_new(auth_url)
-    # Start a temporary server to handle the callback
     httpd = HTTPServer(('', 3000), OAuthCallbackHandler)
     httpd.handle_request()
 
-@click.command()
-def some_authenticated_action():
-    global access_token
-    if access_token is None:
-        click.echo("Please authenticate first using the 'authenticate' command.")
-        return
-    
-    # Example: List user's repositories using the access token
-    headers = {
-        'Authorization': f'token {access_token}',
-        'Accept': 'application/vnd.github.v3+json',
-    }
-    response = requests.get('https://api.github.com/user/repos', headers=headers)
-    
-    if response.ok:
-        for repo in response.json():
-            print(repo['full_name'])
-    else:
-        click.echo("Failed to list repositories.")
 
-@click.group()
-def cli():
-    pass
 
-cli.add_command(authenticate)
-cli.add_command(some_authenticated_action)
+
+def get_current_repo():
+    try:
+        remote_url = subprocess.check_output(["git", "config", "--get", "remote.origin.url"]).decode().strip()
+        if "github.com" in remote_url:
+            repo_full_name = remote_url.split("github.com/")[1].replace(".git", "")
+            return repo_full_name
+    except Exception as e:
+        print(f"Error detecting repository: {e}")
+        return None
+
+
+
+def menu():
+    choice = click.prompt("\nChoose an option:\n0 - Exit\n1 - Encrypt a file\n2 - Decrypt a file", type=int)
+    return choice
+
+
+
+
+
+def main():
+    while True:
+        choice = menu()
+        if choice == 0:
+            break
+
+
+        elif choice == 1:
+            authenticate()
+            click.echo("Authentication process completed.")
+            repo = get_current_repo()
+            print(repo)
+
+            file_path = click.prompt("Enter the path to the file you want to encrypt", type=str)
+            # encrypt_and_store_secret(file_path) function call goes here
+            if file_path  and os.path.exists(file_path):
+                print(file_path)
+
+
+
+        elif choice == 2:
+            authenticate()
+            click.echo("Authentication process completed.")
+            repo = get_current_repo()
+            print(repo)
+
+            # Assuming the user is already authenticated
+            file_path = click.prompt("Enter the path to the file you want to decrypt", type=str)
+            # decrypt_file(file_path) function call goes here
+            if file_path  and os.path.exists(file_path):
+                print(file_path)
+
+
+        else:
+            click.echo("Invalid choice. Please select again.")
 
 if __name__ == "__main__":
-    cli()
+    main()
