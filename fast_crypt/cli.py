@@ -1,54 +1,56 @@
-import os
-import sys
+import click
+import webbrowser
+from http.server import BaseHTTPRequestHandler, HTTPServer
+import threading
+import requests
 
-from getpass import getpass
-from fast_crypt.encryption import generate_key, encrypt_data, decrypt_data
-from fast_crypt.github_auth import github_oauth, has_permission_to_decrypt
+CLIENT_ID = '905746f3395ec758bef4'
+CLIENT_SECRET = 'YOUR_CLIENT_SECRET'
+REDIRECT_URI = 'http://localhost:3000/callback'
+SCOPES = 'repo,user'
 
-# Your cli.py code continues here...
+def handle_oauth_callback(server_class=HTTPServer, handler_class=BaseHTTPRequestHandler):
+    server_address = ('', 3000)
+    httpd = server_class(server_address, handler_class)
+    httpd.handle_request()
 
+class RequestHandler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        if self.path.startswith("/callback"):
+            self.send_response(200)
+            self.send_header('Content-type', 'text/html')
+            self.end_headers()
+            self.wfile.write(b"Authentication successful. You can close this window.")
+            # Extract the code from the URL
+            code = self.path.split('?code=')[1]
+            # Exchange the code for a token in the background
+            threading.Thread(target=exchange_code_for_token, args=(code,)).start()
 
-def main():
-    while True:
-        print("\nFast-Crypt CLI")
-        print("1. Exit")
-        print("2. Encrypt a file")
-        print("3. Decrypt a file")
-        choice = input("Enter your choice: ")
+def exchange_code_for_token(code):
+    url = 'https://github.com/login/oauth/access_token'
+    headers = {'Accept': 'application/json'}
+    payload = {
+        'client_id': CLIENT_ID,
+        'client_secret': CLIENT_SECRET,
+        'code': code,
+        'redirect_uri': REDIRECT_URI
+    }
+    response = requests.post(url, data=payload, headers=headers)
+    access_token = response.json().get('access_token')
+    # Here, use the access_token for authenticated API requests
 
-        if choice == '1':
-            print("Exiting Fast-Crypt.")
-            break
-        elif choice == '2':
-            if github_oauth():
-                file_path = input("Enter the path to the file you want to encrypt: ")
-                if os.path.isfile(file_path):
-                    # select_team_members()
-                    key = generate_key()
-                    with open(file_path, 'rb') as file:
-                        data = file.read()
-                    encrypted_data = encrypt_data(data, key)
-                    with open(file_path + '.enc', 'wb') as file:
-                        file.write(encrypted_data)
-                    print(f"File '{file_path}' encrypted successfully.")
-                else:
-                    print("The specified file does not exist. Please try again.")
-        elif choice == '3':
-            if github_oauth():
-                print("Permission to decrypt: Granted (Mock)")
-                file_path = input("Enter the path to the file you want to decrypt: ")
-                if os.path.isfile(file_path):
-                    key = getpass("Enter the encryption key: ")
-                    with open(file_path, 'rb') as file:
-                        encrypted_data = file.read()
-                    decrypted_data = decrypt_data(encrypted_data, key.encode())
-                    with open(file_path.replace('.enc', ''), 'wb') as file:
-                        file.write(decrypted_data)
-                    print(f"File '{file_path}' decrypted successfully.")
-                else:
-                    print("The specified file does not exist. Please try again.")
-        else:
-            print("Invalid choice. Please try again.")
+@click.command()
+def authenticate():
+    auth_url = f"https://github.com/login/oauth/authorize?client_id={CLIENT_ID}&redirect_uri={REDIRECT_URI}&scope={SCOPES}"
+    webbrowser.open_new(auth_url)
+    # Start a temporary server to handle the callback
+    handle_oauth_callback(HTTPServer, RequestHandler)
+
+@click.group()
+def cli():
+    pass
+
+cli.add_command(authenticate)
 
 if __name__ == "__main__":
-    main()
+    cli()
