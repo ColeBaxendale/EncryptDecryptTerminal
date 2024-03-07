@@ -1,4 +1,1 @@
 cryptography
-click
-python-dotenv
-pytest
