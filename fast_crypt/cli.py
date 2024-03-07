@@ -15,9 +15,6 @@ SCOPES = 'repo,user'
 
 access_token = None
 
-
-
-
 class OAuthCallbackHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         global access_token
@@ -29,10 +26,6 @@ class OAuthCallbackHandler(BaseHTTPRequestHandler):
             access_token = exchange_code_for_token(code)
             message = "Authentication successful. You can close this window."
             self.wfile.write(message.encode())
-
-
-
-
 
 def exchange_code_for_token(code):
     url = 'https://github.com/login/oauth/access_token'
@@ -47,17 +40,11 @@ def exchange_code_for_token(code):
     token_json = response.json()
     return token_json.get('access_token')
 
-
-
-
 def authenticate():
     auth_url = f"https://github.com/login/oauth/authorize?client_id={CLIENT_ID}&redirect_uri={REDIRECT_URI}&scope={SCOPES}"
     webbrowser.open_new(auth_url)
     httpd = HTTPServer(('', 3000), OAuthCallbackHandler)
     httpd.handle_request()
-
-
-
 
 def get_current_repo():
     try:
@@ -69,49 +56,55 @@ def get_current_repo():
         print(f"Error detecting repository: {e}")
         return None
 
-
-
 def menu():
     choice = click.prompt("\nChoose an option:\n0 - Exit\n1 - Encrypt a file\n2 - Decrypt a file", type=int)
     return choice
 
-
-
-
+def file_path_prompt(action):
+    while True:
+        file_path = click.prompt(f"Enter the path to the file you want to {action} (Enter 0 to cancel)", type=str)
+        if file_path == "0":
+            return None  # User chose to exit
+        if os.path.exists(file_path):
+            return file_path
+        else:
+            click.echo("The file does not exist. Please try again.")
 
 def main():
     while True:
         choice = menu()
         if choice == 0:
             break
-
-
         elif choice == 1:
             authenticate()
             click.echo("Authentication process completed.")
             repo = get_current_repo()
-            print(repo)
-
-            file_path = click.prompt("Enter the path to the file you want to encrypt", type=str)
-            # encrypt_and_store_secret(file_path) function call goes here
-            if file_path  and os.path.exists(file_path):
-                print(file_path)
-
-
-
+            if repo:
+                print(f"Working within repository: {repo}")
+                file_path = file_path_prompt("encrypt")
+                if file_path:
+                    # Placeholder: Implement actual encryption and storage logic here
+                    click.echo(f"Encrypting {file_path}")
+                    break
+                else:
+                    click.echo("Encryption cancelled.")
+            else:
+                click.echo("Failed to identify repository. Ensure you're within a git repository.")
         elif choice == 2:
             authenticate()
             click.echo("Authentication process completed.")
             repo = get_current_repo()
-            print(repo)
-
-            # Assuming the user is already authenticated
-            file_path = click.prompt("Enter the path to the file you want to decrypt", type=str)
-            # decrypt_file(file_path) function call goes here
-            if file_path  and os.path.exists(file_path):
-                print(file_path)
-
-
+            if repo:
+                print(f"Working within repository: {repo}")
+                file_path = file_path_prompt("decrypt")
+                if file_path:
+                    # Placeholder: Implement actual decryption logic here
+                    click.echo(f"Decrypting {file_path}")
+                    break
+                else:
+                    click.echo("Decryption cancelled.")
+            else:
+                click.echo("Failed to identify repository. Ensure you're within a git repository.")
         else:
             click.echo("Invalid choice. Please select again.")
 
