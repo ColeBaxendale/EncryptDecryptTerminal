@@ -58,14 +58,14 @@ def main():
             if file_path is None:
                 click.echo("Back to menu")
                 continue
-            print('encrypt ' + repo_full_name)
+            print('encrypt ' + repo_full_name + file_path)
           
         elif choice == 2:
            file_path = file_path_prompt('decrypt')
            if file_path is None:
                 click.echo("Back to menu")
                 continue
-           print('decrypt')
+           print('decrypt ' + repo_full_name + file_path)
         else:
             click.echo("Invalid choice. Please select again.")
 
