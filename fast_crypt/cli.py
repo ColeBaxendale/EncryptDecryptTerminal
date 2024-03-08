@@ -197,6 +197,7 @@ def fetch_key_from_git_secrets(repo_full_name, secret_name):
         secret_value = response.json().get("secret")
         print(f"Secret value retrieved successfully for secret {secret_name}: {secret_value}")
         print(f"Response content: {response.content}")
+        print(secret_value)
         return secret_value
     else:
         # Print error message if request fails
