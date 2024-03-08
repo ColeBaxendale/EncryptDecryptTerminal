@@ -18,6 +18,7 @@ import os
 
 from fast_crypt.auth import authenticate, is_user_authorized
 from fast_crypt.cli_update import get_current_repo
+from fast_crypt.file_path import file_path_prompt
 
 
 
@@ -36,13 +37,13 @@ def main():
     access_token = authenticate()  # Capture the token returned from authenticate
     if not access_token:
         click.echo("GitHub authentication failed. Exiting FastCrypt.")
-        sys.exit(1)
+        sys.exit()
     repo_full_name = get_current_repo()         
     if not repo_full_name:
         click.echo("Failed to identify repository. Ensure you're within a git repository.")
         return
     if not is_user_authorized(access_token, repo_full_name):
-        click.echo("You do not have permission to modify this repository.")
+        click.echo("You do not have permission to modify  " + repo_full_name)
         sys.exit(1)
     else:
         click.echo("Access to " + repo_full_name + " granted!")
@@ -53,9 +54,17 @@ def main():
             click.echo("FastCrypt Close.")
             break
         elif choice == 1:
-            print('encrypt')
+            file_path = file_path_prompt('encrypt')
+            if file_path is None:
+                click.echo("Back to menu")
+                continue
+            print('encrypt ' + repo_full_name)
           
         elif choice == 2:
+           file_path = file_path_prompt('decrypt')
+           if file_path is None:
+                click.echo("Back to menu")
+                continue
            print('decrypt')
         else:
             click.echo("Invalid choice. Please select again.")
