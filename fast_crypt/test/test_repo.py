@@ -1,5 +1,4 @@
 from fast_crypt.get_repo import get_current_repo
-import pytest
 
 
 def test_get_current_repo_success(mocker):

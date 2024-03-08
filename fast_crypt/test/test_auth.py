@@ -1,5 +1,4 @@
 # test_auth.py
-import pytest
 import requests_mock
 from fast_crypt.auth import exchange_code_for_token
 

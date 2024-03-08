@@ -16,7 +16,7 @@ import nacl.signing
 import base64
 import os
 
-from fast_crypt.auth import authenticate
+from fast_crypt.auth import authenticate, is_user_authorized
 from fast_crypt.cli_update import get_current_repo
 
 
@@ -33,15 +33,20 @@ def menu():
 
 @click.command()
 def main():
-    authenticated = authenticate()
-    if not authenticated:
+    access_token = authenticate()  # Capture the token returned from authenticate
+    if not access_token:
         click.echo("GitHub authentication failed. Exiting FastCrypt.")
-        sys.exit(1)  # Exit the program with an error status
+        sys.exit(1)
     repo_full_name = get_current_repo()         
     if not repo_full_name:
         click.echo("Failed to identify repository. Ensure you're within a git repository.")
         return
-    print(repo_full_name)
+    if not is_user_authorized(access_token, repo_full_name):
+        click.echo("You do not have permission to modify this repository.")
+        sys.exit(1)
+    else:
+        click.echo("Access to " + repo_full_name + " granted!")
+
     while True:
         choice = menu()
         if choice == 0:

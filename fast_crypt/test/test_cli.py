@@ -1,5 +1,4 @@
 # test_cli.py
-import pytest
 from click.testing import CliRunner
 from fast_crypt.cli import main
 

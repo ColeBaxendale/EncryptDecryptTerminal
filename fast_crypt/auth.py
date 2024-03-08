@@ -15,7 +15,7 @@ def authenticate():
         httpd = HTTPServer(('', 3000), OAuthCallbackHandler)
         httpd.handle_request()
         if access_token:
-            return True  # Authentication successful
+            return access_token  # Authentication successful
         else:
             return False  # Authentication failed, no access token
     except Exception as e:
@@ -31,9 +31,9 @@ class OAuthCallbackHandler(BaseHTTPRequestHandler):
             self.send_header('Content-type', 'text/html')
             self.end_headers()
             code = self.path.split('?code=')[1]
-            access_token = exchange_code_for_token(code)
+            access_token = exchange_code_for_token(code)  # Ensure this call successfully sets the token
             message = "Authentication successful. You can close this window."
-            self.wfile.write(message.encode())    
+            self.wfile.write(message.encode())
 
 def exchange_code_for_token(code):
     url = 'https://github.com/login/oauth/access_token'
@@ -60,4 +60,19 @@ def exchange_code_for_token(code):
         print(f"An error occurred while trying to exchange code for token: {e}")
         return None
     
+def is_user_authorized(access_token, repo_full_name):
+    headers = {"Authorization": f"token {access_token}"}
+    # Assuming the authenticated user is the one making the request
+    user_endpoint = f"https://api.github.com/user"
+    user_response = requests.get(user_endpoint, headers=headers)
     
+    if user_response.status_code == 200:
+        username = user_response.json()["login"]
+        permissions_endpoint = f"https://api.github.com/repos/{repo_full_name}/collaborators/{username}/permission"
+        permissions_response = requests.get(permissions_endpoint, headers=headers)
+        
+        if permissions_response.status_code == 200:
+            permission = permissions_response.json()["permission"]
+            # Typical permission values include "admin", "write", "read", "none"
+            return permission in ["admin", "write"]
+    return False
