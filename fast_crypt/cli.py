@@ -17,7 +17,7 @@ import base64
 import os
 
 from fast_crypt.auth import authenticate, is_user_authorized
-from fast_crypt.cli_update import get_current_repo
+from fast_crypt.get_repo import get_current_repo
 from fast_crypt.file_path import file_path_prompt
 
 
