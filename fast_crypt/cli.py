@@ -1,22 +1,7 @@
 import sys
 import click
-import webbrowser
-from http.server import BaseHTTPRequestHandler, HTTPServer
-import requests
-import subprocess
-import base64
-from cryptography.fernet import Fernet
-import json
-from cryptography.hazmat.backends import default_backend
-from cryptography.hazmat.primitives import serialization
-from cryptography.hazmat.primitives.asymmetric import padding
-from cryptography.hazmat.primitives import hashes
-import nacl.encoding
-import nacl.signing
-import base64
-import os
-
 from fast_crypt.auth import authenticate, is_user_authorized
+from fast_crypt.encrypt_name import AESEncryption
 from fast_crypt.get_repo import get_current_repo
 from fast_crypt.file_path import file_path_prompt
 
@@ -26,6 +11,8 @@ CLIENT_ID = '905746f3395ec758bef4'
 CLIENT_SECRET = 'a619ae1daeb0e4ee51eb1d2ab3edd1cbdfdc1b9c'  # Securely manage this
 REDIRECT_URI = 'http://localhost:3000/callback'
 SCOPES = 'repo,user'
+
+
 
 access_token = None
 
@@ -47,7 +34,7 @@ def main():
         sys.exit(1)
     else:
         click.echo("Access to " + repo_full_name + " granted!")
-
+    aes_encryption = AESEncryption()
     while True:
         choice = menu()
         if choice == 0:
@@ -58,14 +45,20 @@ def main():
             if file_path is None:
                 click.echo("Back to menu")
                 continue
-            print('encrypt ' + repo_full_name + file_path)
+            unique_identifier = repo_full_name + file_path
+            encrypted_identifier = aes_encryption.encrypt(unique_identifier)
+            print(unique_identifier)
+            print(f'encrypt {encrypted_identifier}')
           
         elif choice == 2:
            file_path = file_path_prompt('decrypt')
            if file_path is None:
                 click.echo("Back to menu")
                 continue
-           print('decrypt ' + repo_full_name + file_path)
+           unique_identifier = repo_full_name + file_path
+           encrypted_identifier = aes_encryption.encrypt(unique_identifier)
+           print(unique_identifier)
+           print(f'decrypt {encrypted_identifier}')
         else:
             click.echo("Invalid choice. Please select again.")
 
