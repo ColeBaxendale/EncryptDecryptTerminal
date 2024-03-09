@@ -47,8 +47,6 @@ def main():
                 continue
             unique_identifier = repo_full_name + file_path
             encrypted_identifier = aes_encryption.encrypt(unique_identifier)
-            print(unique_identifier)
-            print(f'encrypt {encrypted_identifier}')
           
         elif choice == 2:
            file_path = file_path_prompt('decrypt')
@@ -57,8 +55,7 @@ def main():
                 continue
            unique_identifier = repo_full_name + file_path
            encrypted_identifier = aes_encryption.encrypt(unique_identifier)
-           print(unique_identifier)
-           print(f'decrypt {encrypted_identifier}')
+          
         else:
             click.echo("Invalid choice. Please select again.")
 
