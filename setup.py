@@ -1,8 +1,8 @@
 from setuptools import setup, find_packages
 
 setup(
-    name='fast-crypt',
-    version='0.1.0', 
+    name='fast_crypt',
+    version='0.2.2', 
     author='Cole Baxendale',
     author_email='thecodercole@gmail.com',
     description='A CLI tool for encrypting and decrypting files using GitHub authentication, with support for Google Cloud Secret Manager.',
@@ -19,7 +19,7 @@ setup(
     ],
     entry_points={
         'console_scripts': [
-            'fast_crypt=cli:main',  
+            'fast_crypt=fast_crypt.cli:main',  
         ],
     },
     classifiers=[

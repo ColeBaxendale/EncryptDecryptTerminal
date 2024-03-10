@@ -1,2 +1,2 @@
 [console_scripts]
-fast_crypt = cli:main
+fast_crypt = fast_crypt.cli:main
