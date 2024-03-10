@@ -1,0 +1,5 @@
+click>=7.0
+cryptography>=3.4.7
+google-cloud-secret-manager>=2.7.0
+requests>=2.25.1
+prompt_toolkit>=3.0.18
