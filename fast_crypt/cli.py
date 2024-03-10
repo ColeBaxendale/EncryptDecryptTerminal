@@ -7,6 +7,7 @@ from fast_crypt.encrypt_name import AESEncryption
 from fast_crypt.get_repo import get_current_repo
 from fast_crypt.file_path import file_path_prompt
 
+
 def menu():
     return click.prompt("\nChoose an option:\n0 - Exit\n1 - Encrypt a file\n2 - Decrypt a file", type=int)
 
