@@ -1,3 +1,4 @@
+import base64
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 from cryptography.hazmat.backends import default_backend
@@ -16,9 +17,17 @@ def access_secret(secret_name):
     secret_value = response.payload.data.decode("UTF-8")
     return secret_value
 
-FIXED_SALT = access_secret("FIXED_SALT")
-FIXED_IV = access_secret("FIXED_IV")
-FIXED_KEY = access_secret("FIXED_KEY")
+def access_secret_and_decode(secret_name):
+    secret_value = access_secret(secret_name)  # Fetch the secret as a UTF-8 string
+    return base64.urlsafe_b64decode(secret_value)  # Decode from base64 to bytes
+
+# Adjust how you access and handle these secrets
+FIXED_SALT = access_secret_and_decode("FIXED_SALT")
+FIXED_IV = access_secret_and_decode("FIXED_IV")
+FIXED_KEY = access_secret_and_decode("FIXED_KEY")
+
+print(FIXED_IV)
+print(FIXED_SALT)
 class AESEncryption:
     def __init__(self, key=FIXED_KEY, salt=FIXED_SALT, iv=FIXED_IV):
         self.salt = salt
@@ -34,7 +43,8 @@ class AESEncryption:
             iterations=iterations,
             backend=default_backend()
         )
-        return kdf.derive(passphrase.encode())
+        passphrase_bytes = passphrase.encode('utf-8') if isinstance(passphrase, str) else passphrase
+        return kdf.derive(passphrase_bytes)
 
     def encrypt(self, plaintext):
         """Encrypt the plaintext using AES."""

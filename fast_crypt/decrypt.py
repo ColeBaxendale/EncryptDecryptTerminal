@@ -6,7 +6,7 @@ from google.oauth2 import service_account
 
 PROJECT_ID = 'verdant-tempest-416615'
 def access_secret(secret_name):
-    project_id = "PROJECT_ID"  # replace with your GCP project ID
+    project_id = "verdant-tempest-416615"  # replace with your GCP project ID
     client = secretmanager.SecretManagerServiceClient()
     name = f"projects/{project_id}/secrets/{secret_name}/versions/latest"
     response = client.access_secret_version(request={"name": name})
