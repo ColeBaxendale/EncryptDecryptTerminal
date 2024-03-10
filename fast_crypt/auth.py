@@ -40,7 +40,7 @@ class OAuthCallbackHandler(BaseHTTPRequestHandler):
             self.send_header('Content-type', 'text/html')
             self.end_headers()
             code = self.path.split('?code=')[1]
-            access_token = exchange_code_for_token(code)  # Ensure this call successfully sets the token
+            access_token = exchange_code_for_token(code) 
             message = "Authentication successful. You can close this window."
             self.wfile.write(message.encode())
 
@@ -82,6 +82,5 @@ def is_user_authorized(access_token, repo_full_name):
         
         if permissions_response.status_code == 200:
             permission = permissions_response.json()["permission"]
-            # Typical permission values include "admin", "write", "read", "none"
             return permission in ["admin", "write"]
     return False

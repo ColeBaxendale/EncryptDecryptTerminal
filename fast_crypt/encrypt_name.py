@@ -9,7 +9,7 @@ from google.cloud import secretmanager
 
 
 def access_secret(secret_name):
-    project_id = "verdant-tempest-416615"  # replace with your GCP project ID
+    project_id = "verdant-tempest-416615" 
     client = secretmanager.SecretManagerServiceClient()
     name = f"projects/{project_id}/secrets/{secret_name}/versions/latest"
     response = client.access_secret_version(request={"name": name})
@@ -20,7 +20,6 @@ def access_secret_and_decode(secret_name):
     secret_value = access_secret(secret_name)  # Fetch the secret as a UTF-8 string
     return base64.urlsafe_b64decode(secret_value)  # Decode from base64 to bytes
 
-# Adjust how you access and handle these secrets
 FIXED_SALT = access_secret_and_decode("FIXED_SALT")
 FIXED_IV = access_secret_and_decode("FIXED_IV")
 FIXED_KEY = access_secret_and_decode("FIXED_KEY")
