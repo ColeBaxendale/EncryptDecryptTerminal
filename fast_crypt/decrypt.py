@@ -2,7 +2,6 @@ import hashlib
 import click
 from cryptography.fernet import Fernet
 from google.cloud import secretmanager
-from google.oauth2 import service_account
 
 PROJECT_ID = 'verdant-tempest-416615'
 def access_secret(secret_name):

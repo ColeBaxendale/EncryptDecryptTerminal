@@ -2,9 +2,6 @@ import hashlib
 import click
 from google.cloud import secretmanager
 from cryptography.fernet import Fernet
-import base64
-import os
-from google.oauth2 import service_account
 from google.api_core.exceptions import AlreadyExists
 
 PROJECT_ID = 'verdant-tempest-416615'

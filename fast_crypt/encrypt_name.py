@@ -4,8 +4,7 @@ from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import padding
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
-from base64 import urlsafe_b64encode, urlsafe_b64decode
-import os
+from base64 import urlsafe_b64encode
 from google.cloud import secretmanager
 
 
@@ -26,8 +25,6 @@ FIXED_SALT = access_secret_and_decode("FIXED_SALT")
 FIXED_IV = access_secret_and_decode("FIXED_IV")
 FIXED_KEY = access_secret_and_decode("FIXED_KEY")
 
-print(FIXED_IV)
-print(FIXED_SALT)
 class AESEncryption:
     def __init__(self, key=FIXED_KEY, salt=FIXED_SALT, iv=FIXED_IV):
         self.salt = salt
