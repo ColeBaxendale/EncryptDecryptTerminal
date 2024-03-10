@@ -1,5 +1,6 @@
 import os
-
+from prompt_toolkit import prompt
+from prompt_toolkit.completion import PathCompleter
 import click
 
 
@@ -10,8 +11,9 @@ def file_path_prompt(action):
         prompt_message = "Enter the path to the file you want to decrypt (Enter 0 to cancel): "
     else:
         return None
+    completer = PathCompleter()
     while True:
-        file_path_input = input(prompt_message)
+        file_path_input = prompt(prompt_message, completer=completer)
         if file_path_input == "0":
             return None  # User chose to exit
         file_path = does_exist(file_path_input, action)
@@ -35,3 +37,5 @@ def does_exist(file_path, action):
     else:
         click.echo("The file does not exist") 
         return None
+    
+   

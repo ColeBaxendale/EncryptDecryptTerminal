@@ -5,11 +5,20 @@ from cryptography.hazmat.primitives import padding
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from base64 import urlsafe_b64encode, urlsafe_b64decode
 import os
+from google.cloud import secretmanager
 
-FIXED_SALT = b'\x00\x01\x02\x03\x04\x05\x06\x07\x08\t\n\x0b\x0c\r\x0e\x0f'
-FIXED_IV = b'\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0a\x0b\x0c\x0d\x0e\x0f\x10'
-FIXED_KEY = "lv3AHtC/X<mdBe>x/[bLl-&DNRoU0/BDD6H&iF|,`GsRO{a}>))5rfL`/kDLFg#"
 
+def access_secret(secret_name):
+    project_id = "verdant-tempest-416615"  # replace with your GCP project ID
+    client = secretmanager.SecretManagerServiceClient()
+    name = f"projects/{project_id}/secrets/{secret_name}/versions/latest"
+    response = client.access_secret_version(request={"name": name})
+    secret_value = response.payload.data.decode("UTF-8")
+    return secret_value
+
+FIXED_SALT = access_secret("FIXED_SALT")
+FIXED_IV = access_secret("FIXED_IV")
+FIXED_KEY = access_secret("FIXED_KEY")
 class AESEncryption:
     def __init__(self, key=FIXED_KEY, salt=FIXED_SALT, iv=FIXED_IV):
         self.salt = salt

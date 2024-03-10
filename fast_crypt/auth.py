@@ -1,12 +1,21 @@
 from http.server import BaseHTTPRequestHandler, HTTPServer
 import webbrowser
+import click
 import requests
+from google.cloud import secretmanager
 
-CLIENT_ID = '905746f3395ec758bef4'
-CLIENT_SECRET = 'a619ae1daeb0e4ee51eb1d2ab3edd1cbdfdc1b9c'  # Securely manage this
+def access_secret(secret_name):
+    project_id = "verdant-tempest-416615"  # replace with your GCP project ID
+    client = secretmanager.SecretManagerServiceClient()
+    name = f"projects/{project_id}/secrets/{secret_name}/versions/latest"
+    response = client.access_secret_version(request={"name": name})
+    secret_value = response.payload.data.decode("UTF-8")
+    return secret_value
+
+CLIENT_ID = access_secret("CLIENT_ID")
+CLIENT_SECRET = access_secret("CLIENT_SECRET")
 REDIRECT_URI = 'http://localhost:3000/callback'
 SCOPES = 'repo,user'
-
 
 def authenticate():
     try:
@@ -19,7 +28,7 @@ def authenticate():
         else:
             return False  # Authentication failed, no access token
     except Exception as e:
-        print(f"An error occurred during authentication: {e}")
+        click.echo(f"An error occurred during authentication: {e}")
         return False
 
 
@@ -53,11 +62,11 @@ def exchange_code_for_token(code):
             return response.json().get('access_token')
         else:
             # Log the error or notify the user
-            print(f"Failed to exchange code for token. Status code: {response.status_code}")
+            click.echo(f"Failed to exchange code for token. Status code: {response.status_code}")
             return None
     except requests.exceptions.RequestException as e:
         # Handle network errors
-        print(f"An error occurred while trying to exchange code for token: {e}")
+        click.echo(f"An error occurred while trying to exchange code for token: {e}")
         return None
     
 def is_user_authorized(access_token, repo_full_name):
